@@ -148,7 +148,9 @@ def _build_epub_tree(epub, data):
     return root
 
 
-def _process_api_responses(api_responses: List[dict]) -> Dict[str, str]:
+def _process_api_responses(
+    api_responses: List[dict], epub_identifiers: List[str]
+) -> Dict[str, str]:
     epubs = {}
     data = defaultdict(lambda: defaultdict(list))
 
@@ -158,6 +160,8 @@ def _process_api_responses(api_responses: List[dict]) -> Dict[str, str]:
 
     for item in results:
         epub_identifier = item["epub_identifier"]
+        if epub_identifiers and epub_identifier not in epub_identifiers:
+            continue
 
         if epub_identifier not in epubs:
             epubs[epub_identifier] = EPub(
@@ -194,7 +198,9 @@ def _process_api_responses(api_responses: List[dict]) -> Dict[str, str]:
     return as_xml
 
 
-def entry_point(json_dump: Path, cookies: str | Path, export: str) -> None:
+def entry_point(
+    json_dump: Path, cookies: str | Path, export: str, epub_id: List[str]
+) -> None:
     if not json_dump.exists():
         cookies = _load_cookies(cookies)
         _get_api_responses(json_dump, cookies)
@@ -202,7 +208,7 @@ def entry_point(json_dump: Path, cookies: str | Path, export: str) -> None:
     with json_dump.open() as f:
         api_responses = json.load(f)
 
-    as_xml = _process_api_responses(api_responses)
+    as_xml = _process_api_responses(api_responses, epub_id)
 
     if export in ("csv", "raw_xml"):
         export_func = getattr(exporters, f"export_as_{ export }")

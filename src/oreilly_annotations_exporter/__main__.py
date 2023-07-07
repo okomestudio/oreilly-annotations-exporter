@@ -14,6 +14,7 @@ def main():
         help="Cookies string or file containing it",
     )
     p.add_argument("--export", type=str, default="csv")
+    p.add_argument("--epub-id", action="append")
 
     args = p.parse_args()
 
