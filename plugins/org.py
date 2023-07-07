@@ -10,9 +10,16 @@ def export(parsed):
     output = []
     for tree in parsed.values():
         output.append(f"* { tree.get('title') }")
+        output.append(f":PROPERTIES:")
+        output.append(f":EPUB_IDENTIFIER: { tree.get('identifier') }")
+        output.append(f":END:")
         output.append("")
         for chapter in tree.findall("chapter"):
+            chapter_url = chapter.get("url")
             output.append(f"** { chapter.get('title') }")
+            output.append(f":PROPERTIES:")
+            output.append(f":CHAPTER_URL: { chapter_url }")
+            output.append(f":END:")
             output.append("")
             for annotation in chapter.iter("annotation"):
                 quote = _process_spacing(annotation.get("quote"))
@@ -27,7 +34,11 @@ def export(parsed):
                         continue
 
                 output.append(f"#+begin_quote")
-                output.append(quote)
+                output.append(
+                    quote
+                    + f" ([[{ chapter_url }#{ annotation.get('identifier') }][link]])"
+                )
+
                 output.append(f"#+end_quote")
                 output.append("")
                 if text:
